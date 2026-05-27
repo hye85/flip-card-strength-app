@@ -202,7 +202,8 @@
   <section id="resultSection" class="hidden">
     <div class="toolbar noPrint">
       <button onclick="window.print()">결과 인쇄하기</button>
-      <button id="shareImage3Btn">결과 이미지 3장 카카오톡 공유하기</button>
+      <button id="shareKakaoBtn">PDF로 카카오톡 공유하기</button>
+      <button id="shareImage3Btn">결과 이미지 3장 PDF로 카카오톡 공유하기</button>
       <button class="secondary" id="restartBtn">처음부터 다시</button>
     </div>
     <div id="resultArea"></div>
@@ -359,9 +360,76 @@ document.getElementById('backBtn').onclick=()=>{document.getElementById('flipSec
 document.getElementById('clearBtn').onclick=()=>{selected.clear();renderWeak();};
 document.getElementById('restartBtn').onclick=()=>{selected.clear();renderWeak();document.getElementById('resultSection').classList.add('hidden');document.getElementById('selectSection').classList.remove('hidden');window.scrollTo(0,0)};
 renderWeak();
-</script>
 
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+document.getElementById('shareKakaoBtn').onclick = async () => {
+  const target = document.getElementById('resultArea');
+  const buttons = document.querySelectorAll('.noPrint');
+
+  try {
+    buttons.forEach(b => b.style.display = 'none');
+
+    const canvas = await html2canvas(target, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      scrollX: 0,
+      scrollY: 0,
+      windowWidth: document.documentElement.scrollWidth,
+      windowHeight: document.documentElement.scrollHeight
+    });
+
+    buttons.forEach(b => b.style.display = '');
+
+    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+    const { jsPDF } = window.jspdf;
+
+    // A4 세로 PDF. 긴 결과지는 자동으로 여러 페이지에 이어서 들어갑니다.
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+
+    const margin = 6;
+    const usableWidth = pageWidth - margin * 2;
+    const imgHeight = canvas.height * usableWidth / canvas.width;
+
+    let heightLeft = imgHeight;
+    let position = margin;
+
+    pdf.addImage(imgData, 'JPEG', margin, position, usableWidth, imgHeight);
+    heightLeft -= (pageHeight - margin * 2);
+
+    while (heightLeft > 0) {
+      pdf.addPage();
+      position = margin - (imgHeight - heightLeft);
+      pdf.addImage(imgData, 'JPEG', margin, position, usableWidth, imgHeight);
+      heightLeft -= (pageHeight - margin * 2);
+    }
+
+    const pdfBlob = pdf.output('blob');
+    const file = new File([pdfBlob], 'FLIP_강점결과.pdf', { type: 'application/pdf' });
+
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({
+        title: 'FLIP 강점 발견 결과',
+        text: 'FLIP 강점 발견 결과 PDF입니다.',
+        files: [file]
+      });
+    } else {
+      const link = document.createElement('a');
+      link.download = 'FLIP_강점결과.pdf';
+      link.href = URL.createObjectURL(pdfBlob);
+      link.click();
+      alert('PDF 파일이 다운로드되었습니다. 카카오톡에 첨부해서 보내주세요.');
+    }
+
+  } catch (error) {
+    buttons.forEach(b => b.style.display = '');
+    alert('PDF 공유 파일을 만드는 중 오류가 발생했습니다. 다시 시도해 주세요.');
+    console.error(error);
+  }
+};
+
+</script>
 <script>
 async function createThreeResultImageFiles(){
   const target = document.getElementById('resultArea');
@@ -447,6 +515,10 @@ document.addEventListener('click', async function(e){
   }
 });
 </script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
 </body>
 </html>
