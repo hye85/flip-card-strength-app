@@ -173,6 +173,84 @@
         page-break-inside:avoid !important;
       }
     }
+  
+    /* 카카오톡 PDF 공유용: 인쇄 레이아웃과 비슷하게 만드는 숨김 복제 영역 */
+    #pdfShareCloneWrap{
+      position:fixed;
+      left:-99999px;
+      top:0;
+      width:794px;
+      background:#fff;
+      z-index:-1;
+      opacity:0;
+      pointer-events:none;
+    }
+    #pdfShareClone{
+      width:794px;
+      background:#fff;
+      color:#222;
+      padding:0;
+      margin:0;
+    }
+    #pdfShareClone .panel{
+      margin:6px 0 !important;
+      padding:14px !important;
+      border:1px solid #ccc !important;
+      border-radius:12px !important;
+      box-shadow:none !important;
+      page-break-inside:avoid !important;
+      break-inside:avoid !important;
+      background:#fff !important;
+    }
+    #pdfShareClone .panel:has(.summaryTable){
+      page-break-inside:auto !important;
+      break-inside:auto !important;
+    }
+    #pdfShareClone .sectionTitle{
+      margin:10px 0 8px !important;
+      page-break-after:avoid !important;
+      break-after:avoid !important;
+    }
+    #pdfShareClone .resultTitle{
+      margin-bottom:6px !important;
+    }
+    #pdfShareClone .miniList{
+      grid-template-columns:repeat(2,1fr) !important;
+      gap:8px !important;
+    }
+    #pdfShareClone .cols{
+      grid-template-columns:1fr 1fr !important;
+      gap:10px !important;
+    }
+    #pdfShareClone .typeDetailGrid{
+      display:grid !important;
+      grid-template-columns:1fr 1fr !important;
+      gap:10px !important;
+      align-items:start !important;
+    }
+    #pdfShareClone .typeDetailCard,
+    #pdfShareClone .typeBox,
+    #pdfShareClone .situation,
+    #pdfShareClone .summaryTable tr{
+      page-break-inside:avoid !important;
+      break-inside:avoid !important;
+    }
+    #pdfShareClone .typeDetailTop{
+      padding:12px !important;
+    }
+    #pdfShareClone .typeDetailBottom{
+      padding:10px 14px !important;
+    }
+    #pdfShareClone .summaryTable th,
+    #pdfShareClone .summaryTable td{
+      padding:6px !important;
+      font-size:12px !important;
+    }
+    #pdfShareClone .situation{
+      min-height:70px !important;
+      padding:8px !important;
+    }
+
   </style>
 </head>
 <body>
@@ -455,68 +533,72 @@ document.addEventListener('click', async function(e){
 </script>
 
 
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
 
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
   const shareBtn = document.getElementById('shareKakaoBtn');
-
   if (!shareBtn) return;
 
   shareBtn.addEventListener('click', async function () {
-    const target = document.getElementById('resultArea');
-    const buttons = document.querySelectorAll('.noPrint');
+    const resultArea = document.getElementById('resultArea');
 
-    if (!target || !target.innerHTML.trim()) {
+    if (!resultArea || !resultArea.innerHTML.trim()) {
       alert('먼저 3단계 최종 결과지를 확인해 주세요.');
       return;
     }
+
+    let wrap = null;
 
     try {
       shareBtn.disabled = true;
       shareBtn.textContent = 'PDF 만드는 중...';
 
-      buttons.forEach(b => b.style.display = 'none');
+      wrap = document.createElement('div');
+      wrap.id = 'pdfShareCloneWrap';
 
-      const canvas = await html2canvas(target, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-        scrollX: 0,
-        scrollY: 0
-      });
+      const clone = document.createElement('div');
+      clone.id = 'pdfShareClone';
+      clone.innerHTML = resultArea.innerHTML;
 
-      buttons.forEach(b => b.style.display = '');
+      wrap.appendChild(clone);
+      document.body.appendChild(wrap);
 
-      const imgData = canvas.toDataURL('image/jpeg', 0.98);
-      const { jsPDF } = window.jspdf;
+      // 폰트와 레이아웃이 안정된 뒤 PDF 생성
+      await new Promise(resolve => setTimeout(resolve, 300));
 
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
+      const options = {
+        margin: [8, 8, 8, 8],
+        filename: 'FLIP_강점결과.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: {
+          scale: 1.35,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          scrollX: 0,
+          scrollY: 0,
+          windowWidth: 794
+        },
+        jsPDF: {
+          unit: 'mm',
+          format: 'a4',
+          orientation: 'portrait'
+        },
+        pagebreak: {
+          mode: ['css', 'legacy'],
+          avoid: ['.panel', '.typeDetailCard', '.typeBox', '.situation', 'tr']
+        }
+      };
 
-      const margin = 6;
-      const usableWidth = pageWidth - margin * 2;
-      const usableHeight = pageHeight - margin * 2;
+      const pdfBlob = await html2pdf()
+        .set(options)
+        .from(clone)
+        .outputPdf('blob');
 
-      const imgHeight = canvas.height * usableWidth / canvas.width;
-
-      let y = margin;
-      let heightLeft = imgHeight;
-
-      pdf.addImage(imgData, 'JPEG', margin, y, usableWidth, imgHeight);
-      heightLeft -= usableHeight;
-
-      while (heightLeft > 0) {
-        pdf.addPage();
-        y = margin - (imgHeight - heightLeft);
-        pdf.addImage(imgData, 'JPEG', margin, y, usableWidth, imgHeight);
-        heightLeft -= usableHeight;
-      }
-
-      const pdfBlob = pdf.output('blob');
       const file = new File([pdfBlob], 'FLIP_강점결과.pdf', {
         type: 'application/pdf'
       });
@@ -534,16 +616,15 @@ document.addEventListener('DOMContentLoaded', function () {
         document.body.appendChild(link);
         link.click();
         link.remove();
-
         alert('PDF 파일이 다운로드되었습니다. 카카오톡에 첨부해서 공유해 주세요.');
       }
 
     } catch (error) {
-      buttons.forEach(b => b.style.display = '');
       alert('PDF 생성 또는 공유 중 오류가 발생했습니다. 다시 시도해 주세요.');
       console.error(error);
 
     } finally {
+      if (wrap) wrap.remove();
       shareBtn.disabled = false;
       shareBtn.textContent = '카카오톡으로 PDF 공유하기';
     }
