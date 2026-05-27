@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FLIP 강점 발견 카드</title>
+  <style>
+    :root{
+      --red:#b3212d;
+      --orange:#c77822;
+      --blue:#1f78b4;
+      --purple:#7c3f8c;
+      --green:#1f7a55;
+      --gray:#f3f4f6;
+      --ink:#222;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:'Pretendard','Noto Sans KR',system-ui,sans-serif;background:#faf7f1;color:var(--ink)}
+    header{position:sticky;top:0;z-index:10;background:rgba(250,247,241,.96);border-bottom:1px solid #e7dfd4;padding:18px 22px}
+    h1{margin:0;font-size:26px}.sub{margin:6px 0 0;color:#666;font-size:14px}
+    main{max-width:1280px;margin:0 auto;padding:24px}
+    .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:18px 0;padding:14px;background:#fff;border:1px solid #eadfd1;border-radius:18px;box-shadow:0 4px 14px rgba(0,0,0,.05)}
+    button{border:0;border-radius:999px;padding:12px 18px;font-weight:800;cursor:pointer;background:#222;color:#fff}
+    button.secondary{background:#fff;color:#333;border:1px solid #ddd}button:disabled{opacity:.4;cursor:not-allowed}
+    .count{font-weight:800;color:var(--red)}
+    .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px}
+    .card{min-height:205px;background:white;border:3px solid #d9d9d9;border-radius:18px;padding:14px;display:flex;flex-direction:column;justify-content:space-between;text-align:center;box-shadow:0 6px 14px rgba(0,0,0,.08);cursor:pointer;transition:.18s transform,.18s box-shadow;position:relative;overflow:hidden}
+    .card:hover{transform:translateY(-3px);box-shadow:0 10px 20px rgba(0,0,0,.12)}.card.selected{outline:5px solid rgba(179,33,45,.25);transform:translateY(-3px)}
+    .num{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:var(--red);color:#fff;border-radius:999px;padding:3px 12px;font-size:12px;font-weight:800;z-index:2}.emoji{font-size:34px;margin-top:34px}.ko{font-size:20px;font-weight:800;line-height:1.25;white-space:pre-line}.en{font-size:13px;color:#555;line-height:1.2}.typeLabel{font-size:12px;font-weight:900;color:#666}
+    .red{border-color:var(--red)}.orange{border-color:var(--orange)}.blue{border-color:var(--blue)}.purple{border-color:var(--purple)}.green{border-color:var(--green)}
+    .hidden{display:none!important}
+    .flipGrid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px}.flipCard{height:220px;perspective:1000px;cursor:pointer}.flipInner{height:100%;transition:transform .55s;transform-style:preserve-3d}.flipCard.flipped .flipInner{transform:rotateY(180deg)}.face{position:absolute;inset:0;backface-visibility:hidden}.back{transform:rotateY(180deg)}
+    .panel{background:#fff;border:1px solid #eadfd1;border-radius:22px;padding:22px;margin:18px 0;box-shadow:0 5px 14px rgba(0,0,0,.05)}
+    .resultTitle{font-size:28px;margin:0 0 8px}.chips{display:flex;gap:8px;flex-wrap:wrap}.chip{border-radius:999px;padding:8px 12px;background:#f3f4f6;font-weight:800;font-size:13px}.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}.miniList{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}.situation{border:2px dashed #c7b9a8;border-radius:16px;padding:14px;background:#fffdf9;text-align:center;min-height:120px;word-break:keep-all;overflow-wrap:break-word;line-height:1.6;font-size:16px;display:flex;align-items:center;justify-content:center}.situation.bad{background:#fff7f7}.situation.good{background:#f7fff9}.sectionTitle{font-size:22px;margin:22px 0 12px}.summaryTable{width:100%;border-collapse:collapse;background:#fff;table-layout:auto}.summaryTable th,.summaryTable td{border:1px solid #e5ddd3;padding:10px;text-align:left;vertical-align:top;word-break:keep-all;overflow-wrap:break-word;line-height:1.55}.summaryTable th{background:#f7efe6}.summaryTable th.numCol,.summaryTable td.numCell{width:52px;min-width:52px;text-align:center;white-space:nowrap}.summaryTable th.typeCol,.summaryTable td.typeCell{width:120px;text-align:center;font-weight:900;color:#fff}.typeCell.red{background:var(--red)}.typeCell.orange{background:var(--orange)}.typeCell.blue{background:var(--blue)}.typeCell.purple{background:var(--purple)}.typeCell.green{background:var(--green)}.typeBox{border:4px solid #ddd;border-radius:18px;padding:16px;background:#fff;word-break:keep-all;overflow-wrap:break-word;line-height:1.6}.typeBox.red{border-color:var(--red)}.typeBox.orange{border-color:var(--orange)}.typeBox.blue{border-color:var(--blue)}.typeBox.purple{border-color:var(--purple)}.typeBox.green{border-color:var(--green)}
+    .typeDetailGrid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.typeDetailCard{border-radius:22px;overflow:hidden;border:3px solid #ddd;background:#fff;word-break:keep-all;overflow-wrap:break-word}.typeDetailCard.red{border-color:var(--red)}.typeDetailCard.orange{border-color:var(--orange)}.typeDetailCard.blue{border-color:var(--blue)}.typeDetailCard.purple{border-color:var(--purple)}.typeDetailCard.green{border-color:var(--green)}.typeDetailTop{padding:22px;text-align:center}.typeIcon{width:74px;height:74px;margin:0 auto 10px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:34px}.typeIcon.red{background:var(--red)}.typeIcon.orange{background:var(--orange)}.typeIcon.blue{background:var(--blue)}.typeIcon.purple{background:var(--purple)}.typeIcon.green{background:var(--green)}.keywordGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-width:320px;margin:14px auto 0}.keyword{font-weight:900;color:#5a2b31;font-size:18px}.typeDetailBottom{background:#d8d2cc;padding:18px 22px;line-height:1.75}.typeDetailBottom h4{margin:0 0 10px;text-align:center;font-size:18px}.typeDetailBottom ul{margin:0;padding-left:22px}.barWrap{display:grid;grid-template-columns:90px 1fr 44px;gap:10px;align-items:center;margin:8px 0}.bar{height:18px;background:#eee;border-radius:999px;overflow:hidden}.bar span{display:block;height:100%;background:#b3212d}.printOnly{display:none}
+    @media(max-width:900px){.grid,.flipGrid{grid-template-columns:repeat(2,1fr)}.miniList{grid-template-columns:1fr}.cols,.typeDetailGrid{grid-template-columns:1fr}.card{min-height:185px}.ko{font-size:18px}}
+    @media print{
+      @page{
+        size:auto;
+        margin:8mm;
+      }
+
+      html,body{
+        background:#fff !important;
+        margin:0 !important;
+        padding:0 !important;
+      }
+
+      header,.toolbar,#selectSection,#flipSection button,.noPrint{
+        display:none !important;
+      }
+
+      main{
+        max-width:100% !important;
+        width:100% !important;
+        margin:0 !important;
+        padding:0 !important;
+      }
+
+      #resultSection,
+      #resultArea{
+        margin:0 !important;
+        padding:0 !important;
+      }
+
+      .panel{
+        margin:6px 0 !important;
+        padding:14px !important;
+        border:1px solid #ccc !important;
+        border-radius:12px !important;
+        box-shadow:none !important;
+        break-inside:auto !important;
+        page-break-inside:auto !important;
+      }
+
+      .sectionTitle{
+        margin:10px 0 8px !important;
+      }
+
+      .resultTitle{
+        margin-bottom:6px !important;
+      }
+
+      .chips{
+        margin-bottom:8px !important;
+      }
+
+      .printOnly{
+        display:block;
+      }
+
+      .miniList{
+        grid-template-columns:repeat(2,1fr);
+        gap:8px !important;
+      }
+
+      .cols{
+        grid-template-columns:1fr 1fr;
+        gap:10px !important;
+      }
+
+      .typeDetailGrid{
+        display:grid !important;
+        grid-template-columns:1fr 1fr !important;
+        gap:10px !important;
+        align-items:start;
+      }
+
+      .typeDetailCard{
+        width:100% !important;
+        break-inside:avoid;
+        page-break-inside:avoid;
+      }
+
+      .typeDetailTop{
+        padding:12px !important;
+      }
+
+      .typeDetailBottom{
+        padding:10px 14px !important;
+      }
+
+      .summaryTable th,
+      .summaryTable td{
+        padding:6px !important;
+        font-size:12px !important;
+      }
+
+      .situation{
+        min-height:70px !important;
+        padding:8px !important;
+      }
+
+      /* 소제목과 해당 내용이 가능하면 한 페이지 안에 함께 나오도록 묶기 */
+      .panel{
+        break-inside:avoid !important;
+        page-break-inside:avoid !important;
+      }
+
+      /* 표 영역은 전체가 길 수 있으므로, 행 단위로만 잘림 방지 */
+      .panel:has(.summaryTable){
+        break-inside:auto !important;
+        page-break-inside:auto !important;
+      }
+
+      .summaryTable tr{
+        break-inside:avoid !important;
+        page-break-inside:avoid !important;
+      }
+
+      .summaryTable thead{
+        display:table-header-group;
+      }
+
+      .sectionTitle,
+      h2,h3,h4{
+        break-after:avoid !important;
+        page-break-after:avoid !important;
+      }
+
+      p,ul,.chips,.barWrap,.typeDetailGrid,.miniList,.cols{
+        break-before:avoid !important;
+        page-break-before:avoid !important;
+      }
+
+      .typeDetailGrid,
+      .miniList,
+      .cols,
+      .typeBox,
+      .typeDetailCard,
+      .situation{
+        break-inside:avoid !important;
+        page-break-inside:avoid !important;
+      }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>FLIP 강점 발견 카드 웹 앱</h1>
+  <p class="sub">1단계: 나에게 해당되는 약점 카드를 선택 → 2단계: 선택 카드 뒤집기 → 3단계: 강점과 활용 상황 확인</p>
+</header>
+<main>
+  <section id="selectSection">
+    <div class="toolbar">
+      <span>선택한 약점 카드: <b class="count" id="selectedCount">0</b>장</span>
+      <button id="finishBtn">완료하고 강점 보기</button>
+      <button class="secondary" id="clearBtn">선택 초기화</button>
+    </div>
+    <div class="grid" id="weakGrid"></div>
+  </section>
+
+  <section id="flipSection" class="hidden">
+    <div class="toolbar">
+      <span>선택한 약점 카드를 클릭하면 강점 카드로 뒤집힙니다.</span>
+      <button id="showResultBtn">최종 결과 보기</button>
+      <button class="secondary" id="backBtn">다시 선택하기</button>
+    </div>
+    <div class="flipGrid" id="flipGrid"></div>
+  </section>
+
+  <section id="resultSection" class="hidden">
+    <div class="toolbar noPrint">
+      <button onclick="window.print()">결과 인쇄하기</button>
+      <button class="secondary" id="restartBtn">처음부터 다시</button>
+    </div>
+    <div id="resultArea"></div>
+  </section>
+</main>
+
+<script>
+const typeInfo = {
+  red:{name:'에스프레소형',range:'1~10',color:'빨강',desc:'책임감과 주도성이 강하고 체계적이며 규칙적인 것을 좋아합니다. 자신과 타인에게 조금 더 너그러울 때 진한 맛이 더 매력적으로 드러납니다.'},
+  orange:{name:'카푸치노형',range:'11~20',color:'노랑/주황',desc:'따뜻하고 배려심이 많으며 관계를 소중히 여깁니다. 인정 욕구나 지나친 배려가 커지면 자신의 에너지가 줄어들 수 있습니다.'},
+  blue:{name:'아이스커피형',range:'21~30',color:'파랑',desc:'냉철하고 객관적으로 생각하는 힘이 있습니다. 이성적이고 계획적인 장점이 차갑게 느껴지지 않도록 감정 표현을 함께하면 좋습니다.'},
+  purple:{name:'마끼아또형',range:'31~40',color:'보라',desc:'개성이 강하고 창의적이며 새로운 도전을 좋아합니다. 자유롭고 즉흥적인 장점이 꾸준함과 만나면 큰 힘이 됩니다.'},
+  green:{name:'디카페인형',range:'41~50',color:'초록',desc:'온순하고 협력적이며 다른 사람에게 잘 맞추어 줍니다. 너무 소극적이거나 의존적이지 않도록 자기 의견을 조금씩 드러내면 좋습니다.'}
+};
+const cards = [
+{n:1,t:'red',e:'⚾',w:'내 의견을\n강요해요',s:'내 의견을\n자신 있게 말해요'},
+{n:2,t:'red',e:'🪑',w:'융통성이\n부족해요',s:'늘 한결같아요'},
+{n:3,t:'red',e:'🖼️',w:'정해진 틀을 깨는\n것이 싫어요',s:'규칙이나\n약속을 잘 지켜요'},
+{n:4,t:'red',e:'⚙️',w:'주도권을\n쥐려고 해요',s:'주도하는 일을\n잘해요'},
+{n:5,t:'red',e:'🐮',w:'고집이 세요',s:'의지가 강해요'},
+{n:6,t:'red',e:'🎧',w:'다른 사람 말을\n잘 안 들어요',s:'자신감 있게\n행동해요'},
+{n:7,t:'red',e:'⭐',w:'비판적인\n편이에요',s:'보완점을\n잘 찾아내요'},
+{n:8,t:'red',e:'👟',w:'책임감 때문에\n스트레스를 받아요',s:'일에 대한\n책임감이 강해요'},
+{n:9,t:'red',e:'🧱',w:'체계적이지 않은 걸\n못 참아요',s:'정리 정돈을\n잘해요'},
+{n:10,t:'red',e:'📣',w:'다른 사람을\n통제하려고 해요',s:'자기통제를\n잘해요'},
+{n:11,t:'orange',e:'💞',w:'너무 관대해요',s:'타인을 잘 이해하고\n공감해요'},
+{n:12,t:'orange',e:'🌙',w:'남에게 잘하려고\n너무 애써요',s:'다른 사람에게\n친절해요'},
+{n:13,t:'orange',e:'🎁',w:'지나치게\n베풀어요',s:'마음이 따뜻해요'},
+{n:14,t:'orange',e:'❄️',w:'어색한 분위기를\n불편해 해요',s:'분위기를\n좋게 만들어요'},
+{n:15,t:'orange',e:'↔️',w:'지나치게 관계를\n중요하게 생각해요',s:'의리가 있어요'},
+{n:16,t:'orange',e:'🏹',w:'다른 사람에게\n직언을 잘 못해요',s:'칭찬을 잘해요'},
+{n:17,t:'orange',e:'🩹',w:'인간 관계에서\n상처를 잘 받아요',s:'정서적인 관계를\n중요하게 여겨요'},
+{n:18,t:'orange',e:'💎',w:'다른 사람의\n인정을 원해요',s:'타인의 칭찬과 격려를\n소중하게 여겨요'},
+{n:19,t:'orange',e:'🧻',w:'남을 배려하다가\n종종 손해봐요',s:'이타적이에요'},
+{n:20,t:'orange',e:'✋',w:'쉽게 거절하지\n못해요',s:'다른 사람을\n잘 도와줘요'},
+{n:21,t:'blue',e:'🧠',w:'상상력이\n부족해요',s:'분석적으로\n생각해요'},
+{n:22,t:'blue',e:'💼',w:'지나치게\n일중심적이에요',s:'철저하게 일을 해요'},
+{n:23,t:'blue',e:'🧩',w:'사실만\n중요하게 생각해요',s:'객관적으로\n판단해요'},
+{n:24,t:'blue',e:'🧮',w:'늘 손익을 따져요',s:'효율적으로\n일해요'},
+{n:25,t:'blue',e:'🛠️',w:'뭐든 혼자\n하려고 해요',s:'독립적으로 일해요'},
+{n:26,t:'blue',e:'📋',w:'계획에\n집착해요',s:'미리 준비를 잘해요'},
+{n:27,t:'blue',e:'🌵',w:'타인의 감정에\n민감하지 않아요',s:'감정에 별로\n휘둘리지 않아요'},
+{n:28,t:'blue',e:'🔪',w:'다른 사람에게\n냉정해요',s:'이성적으로\n행동해요'},
+{n:29,t:'blue',e:'🍓',w:'재미나 유머감각이\n없어요',s:'늘 차분해요'},
+{n:30,t:'blue',e:'🚦',w:'결정하는데 시간이\n오래 걸려요',s:'깊이 생각하고\n행동해요'},
+{n:31,t:'purple',e:'🔋',w:'쉽게\n관심을 잃어요',s:'새로운 일을\n잘 시작해요'},
+{n:32,t:'purple',e:'📊',w:'무모한\n행동을 해요',s:'도전을 즐겨요'},
+{n:33,t:'purple',e:'🔬',w:'좋아하는 일만\n하려고 해요',s:'관심 있는 일에\n몰입을 잘해요'},
+{n:34,t:'purple',e:'🐢',w:'쉽게\n지루함을 느껴요',s:'활동적이에요'},
+{n:35,t:'purple',e:'🤡',w:'너무\n개성이 강해요',s:'좋아하고 싫어하는\n것이 분명해요'},
+{n:36,t:'purple',e:'🏉',w:'구속받는 걸\n싫어해요',s:'자유로움을\n추구해요'},
+{n:37,t:'purple',e:'🐭',w:'깊이\n생각하지 않아요',s:'순발력이\n뛰어나요'},
+{n:38,t:'purple',e:'📢',w:'감정을\n통제하기 어려워요',s:'감정을\n잘 표현해요'},
+{n:39,t:'purple',e:'💡',w:'딴 생각을\n자주해요',s:'기발한 생각을\n잘해요'},
+{n:40,t:'purple',e:'🌅',w:'변덕스러워요',s:'변화를 즐겨요'},
+{n:41,t:'green',e:'🍼',w:'내 의견을 적극적으로\n말하지 않아요',s:'협조를 잘해요'},
+{n:42,t:'green',e:'☂️',w:'갈등을\n회피해요',s:'평화로운 관계를\n원해요'},
+{n:43,t:'green',e:'💬',w:'타인에게\n의존해요',s:'다른 사람의 의견을\n잘 참고해요'},
+{n:44,t:'green',e:'👍',w:'자신감이\n부족해요',s:'겸손해요'},
+{n:45,t:'green',e:'🃏',w:'의심이 많아요',s:'조심스럽게\n행동해요'},
+{n:46,t:'green',e:'🎯',w:'미리 걱정을\n많이 해요',s:'큰 실수를\n하지 않아요'},
+{n:47,t:'green',e:'🧿',w:'상대의 눈치를\n많이 봐요',s:'예의 바르게\n행동해요'},
+{n:48,t:'green',e:'🥬',w:'하고 싶은 것을\n억제해요',s:'참을성이 있어요'},
+{n:49,t:'green',e:'🥕',w:'부끄러움이\n많아요',s:'온순해요'},
+{n:50,t:'green',e:'🎭',w:'나를 잘\n드러내지 않아요',s:'남에게 피해를\n주지 않아요'}
+];
+const typeDetails = {
+red:{icon:'☕',weakKeywords:['보수적','비판적','직설적','고집'],strengthKeywords:['책임감','체계성','리더십','일관성'],cautions:['설득이 힘들 수 있음','직설적 표현에 마음이 다칠 수 있음','내 감정이 무시당할 수 있음','고지식함에 답답할 수 있음'],manual:['책임감을 부여해 주세요.','규칙과 질서를 따라주세요.','실력과 성취를 인정해 주세요.','공과 사를 구분해 주세요.']},
+orange:{icon:'☕',weakKeywords:['간섭','거절못함','감정소모','우유부단'],strengthKeywords:['친근함','공감력','부드러움','배려심'],cautions:['지나친 관심이 부담될 수 있음','쉽게 서운해할 수 있음','우유부단함이 답답할 수 있음','간섭, 잔소리에 짜증날 수 있음'],manual:['도움을 요청하세요.','관심사를 공유하세요.','칭찬과 인정을 아낌없이 주세요.','웃어주고 공감해 주세요.']},
+blue:{icon:'🥤',weakKeywords:['계산적','감성부족','냉정함','재미없음'],strengthKeywords:['논리성','효율적','현실적','계획적'],cautions:['계산적 행동에 서운할 수 있음','냉정한 반응에 당황할 수 있음','공감받지 못해 섭섭할 수 있음','농담이 통하지 않을 수 있음'],manual:['이성적으로 대화하세요.','맡은 바 역할에 충실해 주세요.','논리적으로 설명해 주세요.','계획에 따라 움직여 주세요.']},
+purple:{icon:'🥤',weakKeywords:['충동적','변덕','자기중심적','무절제'],strengthKeywords:['창의적','호기심','천진난만','자유로움'],cautions:['이기적인 행동에 화날 수 있음','계획이 자주 바뀔 수 있음','충동성에 짜증날 수 있음','자유분방한 행동이 거슬릴 수 있음'],manual:['새로운 변화나 자극을 주세요.','재미나 자율을 부여해 주세요.','자유로운 분위기를 만들어 주세요.','개성을 인정해 주세요.']},
+green:{icon:'🥤',weakKeywords:['소심함','열등감','자책','의존적'],strengthKeywords:['신중함','차분함','인내심','겸손'],cautions:['소심한 행동에 답답할 수 있음','기다려주느라 피곤할 수 있음','의존적인 태도에 짜증날 수 있음','소극적 행동에 답답할 수 있음'],manual:['편안한 분위기를 만들어 주세요.','충분히 기다려 주세요.','작은 노력도 칭찬해 주세요.','무언가를 강요하지 마세요.']}
+};
+
+const jobCards = {
+red:['자원관리하기','사람관리하기','통솔하기','경영하기','체계화하기','개선하기','모니터링하기','평가하기','실행하기','설득하기'],
+orange:['서비스하기','판매하기','촉진하기','관계맺기','상담하기','돌보기','가르치기','공감하기','마음읽기','동기부여하기'],
+blue:['분석하기','패턴찾기','정리하기','전략세우기','탐구하기','예측하기','계획하기','문제해결하기','기획하기','예산짜기'],
+purple:['새로운 아이디어내기','상상하기','실험하기','트렌드 파악하기','표현하기','창작하기','관찰하기','디자인하기','연결하기','의미부여하기'],
+green:['반복하기','기록하기','예방하기','반응살피기','세심하게 살피기','조력하기','개별화하기','맞춤화하기','유지 및 관리하기','심사숙고하기']
+};
+
+const situations = [
+{txt:'우리가 함께 가는 여행', need:['orange','green'], hard:['blue']},
+{txt:'오늘은 신나게 즐기며 친해지는 날', need:['purple','orange'], hard:['blue']},
+{txt:'함께 자료를 만들어야 해', need:['red','blue','green'], hard:['purple']},
+{txt:'우리는 새로운 도전에 성공했다!', need:['purple','red'], hard:['green']},
+{txt:'우리는 화합이 잘된다!', need:['green','orange'], hard:['red']},
+{txt:'함께 하는 것을 행복해 하는 우리', need:['orange','green'], hard:['blue']},
+{txt:'우리가 가장 먼저 과제를 끝냈다!', need:['red','blue'], hard:['purple']},
+{txt:'오늘은 우리 함께 대청소 하는 날', need:['red','green'], hard:['purple']},
+{txt:'분위기는 좋은데 일 추진은 더딘 우리', need:['red','blue'], hard:['orange','green']},
+{txt:'일 추진이 잘되는 우리', need:['red','blue'], hard:['orange']},
+{txt:'탁월한 리더가 필요한 우리', need:['red'], hard:['green']},
+{txt:'우리는 평판이 좋다!', need:['orange','green'], hard:['purple']},
+{txt:'아직도 우리의 관계가 서먹하다', need:['orange','green'], hard:['blue','red']},
+{txt:'우리 회의의 참여율이 낮다', need:['purple','orange','red'], hard:['green']},
+{txt:'팀에 대한 만족도가 계속 떨어지고 있다', need:['orange','green','red'], hard:['blue']},
+{txt:'아무도 자기 의견을 말하지 않는다', need:['red','purple'], hard:['green']},
+{txt:'새로운 멤버가 적응을 못한다', need:['orange','green'], hard:['blue','red']},
+{txt:'우리 안에서 자꾸 갈등이 생긴다', need:['green','orange'], hard:['red']},
+{txt:'팀과제 D-3, 50%도 못했다', need:['red','blue'], hard:['purple','green']},
+{txt:'다들 협력하려고 하지 않는다', need:['green','orange'], hard:['red','blue']}
+];
+let selected = new Set();
+const weakGrid = document.getElementById('weakGrid');
+function cardHTML(c, mode='weak'){
+  const text = mode==='strength'?c.s:c.w;
+  return `<div class="card ${mode==='strength' ? c.t : ''}" data-n="${c.n}"><div class="num">${c.n}</div><div class="emoji">${c.e}</div><div class="ko">${text}</div><div class="en">${mode==='strength'?'Strength':'Weakness'}</div></div>`;
+}
+function renderWeak(){
+  weakGrid.innerHTML = cards.map(c=>cardHTML(c,'weak')).join('');
+  weakGrid.querySelectorAll('.card').forEach(el=>{
+    const n=+el.dataset.n;if(selected.has(n))el.classList.add('selected');
+    el.onclick=()=>{selected.has(n)?selected.delete(n):selected.add(n);renderWeak();updateCount();}
+  });updateCount();
+}
+function updateCount(){document.getElementById('selectedCount').textContent=selected.size;}
+function renderFlip(){
+  const chosen = cards.filter(c=>selected.has(c.n));
+  document.getElementById('flipGrid').innerHTML = chosen.map(c=>`<div class="flipCard"><div class="flipInner"><div class="face">${cardHTML(c,'weak')}</div><div class="face back">${cardHTML(c,'strength')}</div></div></div>`).join('');
+  document.querySelectorAll('.flipCard').forEach(el=>el.onclick=()=>el.classList.toggle('flipped'));
+}
+function getCounts(chosen){return chosen.reduce((a,c)=>(a[c.t]=(a[c.t]||0)+1,a),{});} 
+function topType(counts){return Object.entries(counts).sort((a,b)=>b[1]-a[1])[0]?.[0]||'red';}
+function fitSituations(type, good=true){
+  return situations.filter(s=>good?s.need.includes(type):s.hard.includes(type)).slice(0, good?5:3);
+}
+function renderBars(counts){
+ const max=Math.max(1,...Object.values(counts));
+ return Object.keys(typeInfo).map(t=>`<div class="barWrap"><b>${typeInfo[t].name}</b><div class="bar"><span style="width:${((counts[t]||0)/max)*100}%;background:var(--${t})"></span></div><b>${counts[t]||0}</b></div>`).join('');
+}
+function renderTypeDetail(tt){
+ const info=typeInfo[tt], d=typeDetails[tt];
+ return `<div class="panel"><h3 class="sectionTitle">${info.name} 유형 상세 카드</h3><div class="typeDetailGrid">
+  <div class="typeDetailCard ${tt}"><div class="typeDetailTop"><div class="typeIcon ${tt}">${d.icon}</div><h3>${info.name}</h3><div class="keywordGrid">${d.weakKeywords.map(k=>`<div class="keyword"># ${k}</div>`).join('')}</div></div><div class="typeDetailBottom"><h4>사용 시 주의사항</h4><ul>${d.cautions.map(x=>`<li>${x}</li>`).join('')}</ul></div></div>
+  <div class="typeDetailCard ${tt}"><div class="typeDetailTop"><div class="typeIcon ${tt}">${d.icon}</div><h3>${info.name}</h3><div class="keywordGrid">${d.strengthKeywords.map(k=>`<div class="keyword"># ${k}</div>`).join('')}</div></div><div class="typeDetailBottom"><h4>사용설명</h4><ul>${d.manual.map(x=>`<li>${x}</li>`).join('')}</ul></div></div>
+ </div></div>`;
+}
+function renderResult(){
+ const chosen=cards.filter(c=>selected.has(c.n)); const counts=getCounts(chosen); const tt=topType(counts); const info=typeInfo[tt];
+ const good=fitSituations(tt,true), bad=fitSituations(tt,false);
+ document.getElementById('resultArea').innerHTML=`
+ <div class="panel"><h2 class="resultTitle">최종 유형: ${info.color} ${info.name}</h2><p>${info.desc}</p><div class="chips"><span class="chip">카드번호 ${info.range}</span><span class="chip">선택 ${counts[tt]||0}장</span><span class="chip">전체 선택 ${chosen.length}장</span></div><h3 class="sectionTitle">색깔별 선택 분포</h3>${renderBars(counts)}</div>
+ ${renderTypeDetail(tt)}
+ <div class="panel"><h3 class="sectionTitle">선택한 단점과 장점이 잘 활용될 수 있는 상황 카드</h3><div class="miniList">${good.map(s=>`<div class="situation good">${s.txt}</div>`).join('')}</div><h3 class="sectionTitle">활용하기 어려운 상황 카드</h3><div class="miniList">${bad.map(s=>`<div class="situation bad">${s.txt}</div>`).join('')}</div></div>
+ <div class="panel"><h3 class="sectionTitle">내가 선택한 카드의 약점 → 강점 정리</h3><table class="summaryTable"><thead><tr><th class="numCol">번호</th><th class="typeCol">유형</th><th>약점 카드</th><th>뒤집힌 강점 카드</th></tr></thead><tbody>${chosen.map(c=>`<tr><td class="numCell">${c.n}</td><td class="typeCell ${c.t}">${typeInfo[c.t].name}</td><td>${c.w.replaceAll('\n',' ')}</td><td>${c.s.replaceAll('\n',' ')}</td></tr>`).join('')}</tbody></table></div>
+ <div class="panel"><h3 class="sectionTitle">최종 유형 카드 내용 정리</h3><div class="cols"><div class="typeBox ${tt}"><h4>대표 약점</h4><ul>${cards.filter(c=>c.t===tt).map(c=>`<li>${c.n}. ${c.w.replaceAll('\n',' ')}</li>`).join('')}</ul></div><div class="typeBox ${tt}"><h4>대표 강점</h4><ul>${cards.filter(c=>c.t===tt).map(c=>`<li>${c.n}. ${c.s.replaceAll('\n',' ')}</li>`).join('')}</ul></div></div></div>
+ <div class="panel"><h3 class="sectionTitle">${info.name} 유형의 잘하는 일 카드</h3><div class="miniList">${jobCards[tt].map(job=>`<div class="situation good">${job}</div>`).join('')}</div></div>`;
+}
+document.getElementById('finishBtn').onclick=()=>{if(!selected.size){alert('약점 카드를 1장 이상 선택해 주세요.');return;}document.getElementById('selectSection').classList.add('hidden');document.getElementById('flipSection').classList.remove('hidden');renderFlip();window.scrollTo(0,0)};
+document.getElementById('showResultBtn').onclick=()=>{document.getElementById('flipSection').classList.add('hidden');document.getElementById('resultSection').classList.remove('hidden');renderResult();window.scrollTo(0,0)};
+document.getElementById('backBtn').onclick=()=>{document.getElementById('flipSection').classList.add('hidden');document.getElementById('selectSection').classList.remove('hidden');};
+document.getElementById('clearBtn').onclick=()=>{selected.clear();renderWeak();};
+document.getElementById('restartBtn').onclick=()=>{selected.clear();renderWeak();document.getElementById('resultSection').classList.add('hidden');document.getElementById('selectSection').classList.remove('hidden');window.scrollTo(0,0)};
+renderWeak();
+</script>
+</body>
+</html>
