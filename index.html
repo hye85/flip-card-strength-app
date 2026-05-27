@@ -179,14 +179,14 @@
       position:fixed;
       left:-99999px;
       top:0;
-      width:794px;
+      width:720px;
       background:#fff;
       z-index:-1;
       opacity:0;
       pointer-events:none;
     }
     #pdfShareClone{
-      width:794px;
+      width:720px;
       background:#fff;
       color:#222;
       padding:0;
@@ -249,6 +249,78 @@
     #pdfShareClone .situation{
       min-height:70px !important;
       padding:8px !important;
+    }
+
+  
+    /* PDF 공유 오른쪽 잘림 방지 보정 */
+    #pdfShareCloneWrap{
+      width:720px !important;
+      max-width:720px !important;
+      overflow:visible !important;
+    }
+    #pdfShareClone,
+    #pdfShareClone *{
+      box-sizing:border-box !important;
+    }
+    #pdfShareClone{
+      width:720px !important;
+      max-width:720px !important;
+      overflow:visible !important;
+      padding:0 !important;
+    }
+    #pdfShareClone .panel{
+      width:100% !important;
+      max-width:100% !important;
+      overflow:visible !important;
+    }
+    #pdfShareClone .summaryTable{
+      width:100% !important;
+      max-width:100% !important;
+      table-layout:fixed !important;
+      border-collapse:collapse !important;
+    }
+    #pdfShareClone .summaryTable th,
+    #pdfShareClone .summaryTable td{
+      word-break:keep-all !important;
+      overflow-wrap:anywhere !important;
+      white-space:normal !important;
+    }
+    #pdfShareClone .summaryTable th.numCol,
+    #pdfShareClone .summaryTable td.numCell{
+      width:44px !important;
+      min-width:44px !important;
+    }
+    #pdfShareClone .summaryTable th.typeCol,
+    #pdfShareClone .summaryTable td.typeCell{
+      width:92px !important;
+      min-width:92px !important;
+    }
+    #pdfShareClone .miniList,
+    #pdfShareClone .cols,
+    #pdfShareClone .typeDetailGrid{
+      width:100% !important;
+      max-width:100% !important;
+      overflow:visible !important;
+    }
+    #pdfShareClone .typeDetailGrid{
+      grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+    }
+    #pdfShareClone .cols{
+      grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+    }
+    #pdfShareClone .miniList{
+      grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+    }
+    #pdfShareClone .typeDetailCard,
+    #pdfShareClone .typeBox,
+    #pdfShareClone .situation{
+      min-width:0 !important;
+      max-width:100% !important;
+      overflow-wrap:anywhere !important;
+    }
+    #pdfShareClone .keywordGrid{
+      grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+      max-width:100% !important;
     }
 
   </style>
@@ -572,16 +644,16 @@ document.addEventListener('DOMContentLoaded', function () {
       await new Promise(resolve => setTimeout(resolve, 300));
 
       const options = {
-        margin: [8, 8, 8, 8],
+        margin: [8, 10, 8, 10],
         filename: 'FLIP_강점결과.pdf',
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: {
-          scale: 1.35,
+          scale: 1.15,
           useCORS: true,
           backgroundColor: '#ffffff',
           scrollX: 0,
           scrollY: 0,
-          windowWidth: 794
+          windowWidth: 720
         },
         jsPDF: {
           unit: 'mm',
