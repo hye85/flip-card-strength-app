@@ -202,14 +202,13 @@
   <section id="resultSection" class="hidden">
     <div class="toolbar noPrint">
       <button onclick="window.print()">결과 인쇄하기</button>
-      <button id="shareKakaoBtn">카카오톡 공유하기</button>
+      <button id="sharePdfBtn">PDF로 카카오톡 공유하기</button>
       <button class="secondary" id="restartBtn">처음부터 다시</button>
     </div>
     <div id="resultArea"></div>
   </section>
 </main>
 
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script>
 const typeInfo = {
   red:{name:'에스프레소형',range:'1~10',color:'빨강',desc:'책임감과 주도성이 강하고 체계적이며 규칙적인 것을 좋아합니다. 자신과 타인에게 조금 더 너그러울 때 진한 맛이 더 매력적으로 드러납니다.'},
@@ -318,80 +317,7 @@ function renderWeak(){
   weakGrid.innerHTML = cards.map(c=>cardHTML(c,'weak')).join('');
   weakGrid.querySelectorAll('.card').forEach(el=>{
     const n=+el.dataset.n;if(selected.has(n))el.classList.add('selected');
-    el.onclick=()=>{selected.has(n)?selected.delete(n):selected.add(n);
-async function shareResultToKakao(){
-  const target = document.getElementById('resultArea');
-  if(!target){
-    alert('공유할 결과지가 없습니다. 먼저 최종 결과를 확인해 주세요.');
-    return;
-  }
-
-  const shareBtn = document.getElementById('shareKakaoBtn');
-  const originalText = shareBtn ? shareBtn.textContent : '';
-  if(shareBtn){
-    shareBtn.disabled = true;
-    shareBtn.textContent = '공유 이미지 만드는 중...';
-  }
-
-  try{
-    if(typeof html2canvas === 'undefined'){
-      throw new Error('html2canvas 라이브러리를 불러오지 못했습니다.');
-    }
-
-    const canvas = await html2canvas(target, {
-      scale: Math.min(2, window.devicePixelRatio || 1.5),
-      useCORS: true,
-      backgroundColor: '#ffffff',
-      scrollX: 0,
-      scrollY: -window.scrollY,
-      windowWidth: document.documentElement.scrollWidth,
-      windowHeight: document.documentElement.scrollHeight
-    });
-
-    canvas.toBlob(async (blob) => {
-      if(!blob){
-        alert('결과 이미지를 만들지 못했습니다. 다시 시도해 주세요.');
-        return;
-      }
-
-      const file = new File([blob], 'FLIP_강점발견_결과지.png', { type: 'image/png' });
-
-      if(navigator.share && navigator.canShare && navigator.canShare({ files: [file] })){
-        try{
-          await navigator.share({
-            title: 'FLIP 강점 발견 결과지',
-            text: '나의 FLIP 강점 발견 결과지입니다.',
-            files: [file]
-          });
-        }catch(err){
-          // 사용자가 공유를 취소한 경우는 조용히 처리
-          console.log('공유가 취소되었거나 실패했습니다.', err);
-        }
-      }else{
-        const link = document.createElement('a');
-        link.download = 'FLIP_강점발견_결과지.png';
-        link.href = URL.createObjectURL(blob);
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        setTimeout(() => URL.revokeObjectURL(link.href), 1000);
-        alert('결과지 이미지가 다운로드되었습니다. 카카오톡에 파일로 첨부해서 보내주세요.');
-      }
-    }, 'image/png');
-  }catch(error){
-    console.error(error);
-    alert('공유 이미지를 만드는 중 오류가 발생했습니다. 인쇄하기에서 PDF 저장을 사용해 주세요.');
-  }finally{
-    if(shareBtn){
-      shareBtn.disabled = false;
-      shareBtn.textContent = originalText;
-    }
-  }
-}
-
-document.getElementById('shareKakaoBtn').onclick = shareResultToKakao;
-
-renderWeak();updateCount();}
+    el.onclick=()=>{selected.has(n)?selected.delete(n):selected.add(n);renderWeak();updateCount();}
   });updateCount();
 }
 function updateCount(){document.getElementById('selectedCount').textContent=selected.size;}
@@ -430,228 +356,87 @@ function renderResult(){
 document.getElementById('finishBtn').onclick=()=>{if(!selected.size){alert('약점 카드를 1장 이상 선택해 주세요.');return;}document.getElementById('selectSection').classList.add('hidden');document.getElementById('flipSection').classList.remove('hidden');renderFlip();window.scrollTo(0,0)};
 document.getElementById('showResultBtn').onclick=()=>{document.getElementById('flipSection').classList.add('hidden');document.getElementById('resultSection').classList.remove('hidden');renderResult();window.scrollTo(0,0)};
 document.getElementById('backBtn').onclick=()=>{document.getElementById('flipSection').classList.add('hidden');document.getElementById('selectSection').classList.remove('hidden');};
-document.getElementById('clearBtn').onclick=()=>{selected.clear();
-async function shareResultToKakao(){
-  const target = document.getElementById('resultArea');
-  if(!target){
-    alert('공유할 결과지가 없습니다. 먼저 최종 결과를 확인해 주세요.');
-    return;
-  }
-
-  const shareBtn = document.getElementById('shareKakaoBtn');
-  const originalText = shareBtn ? shareBtn.textContent : '';
-  if(shareBtn){
-    shareBtn.disabled = true;
-    shareBtn.textContent = '공유 이미지 만드는 중...';
-  }
-
-  try{
-    if(typeof html2canvas === 'undefined'){
-      throw new Error('html2canvas 라이브러리를 불러오지 못했습니다.');
-    }
-
-    const canvas = await html2canvas(target, {
-      scale: Math.min(2, window.devicePixelRatio || 1.5),
-      useCORS: true,
-      backgroundColor: '#ffffff',
-      scrollX: 0,
-      scrollY: -window.scrollY,
-      windowWidth: document.documentElement.scrollWidth,
-      windowHeight: document.documentElement.scrollHeight
-    });
-
-    canvas.toBlob(async (blob) => {
-      if(!blob){
-        alert('결과 이미지를 만들지 못했습니다. 다시 시도해 주세요.');
-        return;
-      }
-
-      const file = new File([blob], 'FLIP_강점발견_결과지.png', { type: 'image/png' });
-
-      if(navigator.share && navigator.canShare && navigator.canShare({ files: [file] })){
-        try{
-          await navigator.share({
-            title: 'FLIP 강점 발견 결과지',
-            text: '나의 FLIP 강점 발견 결과지입니다.',
-            files: [file]
-          });
-        }catch(err){
-          // 사용자가 공유를 취소한 경우는 조용히 처리
-          console.log('공유가 취소되었거나 실패했습니다.', err);
-        }
-      }else{
-        const link = document.createElement('a');
-        link.download = 'FLIP_강점발견_결과지.png';
-        link.href = URL.createObjectURL(blob);
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        setTimeout(() => URL.revokeObjectURL(link.href), 1000);
-        alert('결과지 이미지가 다운로드되었습니다. 카카오톡에 파일로 첨부해서 보내주세요.');
-      }
-    }, 'image/png');
-  }catch(error){
-    console.error(error);
-    alert('공유 이미지를 만드는 중 오류가 발생했습니다. 인쇄하기에서 PDF 저장을 사용해 주세요.');
-  }finally{
-    if(shareBtn){
-      shareBtn.disabled = false;
-      shareBtn.textContent = originalText;
-    }
-  }
-}
-
-document.getElementById('shareKakaoBtn').onclick = shareResultToKakao;
-
-renderWeak();};
-document.getElementById('restartBtn').onclick=()=>{selected.clear();
-async function shareResultToKakao(){
-  const target = document.getElementById('resultArea');
-  if(!target){
-    alert('공유할 결과지가 없습니다. 먼저 최종 결과를 확인해 주세요.');
-    return;
-  }
-
-  const shareBtn = document.getElementById('shareKakaoBtn');
-  const originalText = shareBtn ? shareBtn.textContent : '';
-  if(shareBtn){
-    shareBtn.disabled = true;
-    shareBtn.textContent = '공유 이미지 만드는 중...';
-  }
-
-  try{
-    if(typeof html2canvas === 'undefined'){
-      throw new Error('html2canvas 라이브러리를 불러오지 못했습니다.');
-    }
-
-    const canvas = await html2canvas(target, {
-      scale: Math.min(2, window.devicePixelRatio || 1.5),
-      useCORS: true,
-      backgroundColor: '#ffffff',
-      scrollX: 0,
-      scrollY: -window.scrollY,
-      windowWidth: document.documentElement.scrollWidth,
-      windowHeight: document.documentElement.scrollHeight
-    });
-
-    canvas.toBlob(async (blob) => {
-      if(!blob){
-        alert('결과 이미지를 만들지 못했습니다. 다시 시도해 주세요.');
-        return;
-      }
-
-      const file = new File([blob], 'FLIP_강점발견_결과지.png', { type: 'image/png' });
-
-      if(navigator.share && navigator.canShare && navigator.canShare({ files: [file] })){
-        try{
-          await navigator.share({
-            title: 'FLIP 강점 발견 결과지',
-            text: '나의 FLIP 강점 발견 결과지입니다.',
-            files: [file]
-          });
-        }catch(err){
-          // 사용자가 공유를 취소한 경우는 조용히 처리
-          console.log('공유가 취소되었거나 실패했습니다.', err);
-        }
-      }else{
-        const link = document.createElement('a');
-        link.download = 'FLIP_강점발견_결과지.png';
-        link.href = URL.createObjectURL(blob);
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        setTimeout(() => URL.revokeObjectURL(link.href), 1000);
-        alert('결과지 이미지가 다운로드되었습니다. 카카오톡에 파일로 첨부해서 보내주세요.');
-      }
-    }, 'image/png');
-  }catch(error){
-    console.error(error);
-    alert('공유 이미지를 만드는 중 오류가 발생했습니다. 인쇄하기에서 PDF 저장을 사용해 주세요.');
-  }finally{
-    if(shareBtn){
-      shareBtn.disabled = false;
-      shareBtn.textContent = originalText;
-    }
-  }
-}
-
-document.getElementById('shareKakaoBtn').onclick = shareResultToKakao;
-
-renderWeak();document.getElementById('resultSection').classList.add('hidden');document.getElementById('selectSection').classList.remove('hidden');window.scrollTo(0,0)};
-
-async function shareResultToKakao(){
-  const target = document.getElementById('resultArea');
-  if(!target){
-    alert('공유할 결과지가 없습니다. 먼저 최종 결과를 확인해 주세요.');
-    return;
-  }
-
-  const shareBtn = document.getElementById('shareKakaoBtn');
-  const originalText = shareBtn ? shareBtn.textContent : '';
-  if(shareBtn){
-    shareBtn.disabled = true;
-    shareBtn.textContent = '공유 이미지 만드는 중...';
-  }
-
-  try{
-    if(typeof html2canvas === 'undefined'){
-      throw new Error('html2canvas 라이브러리를 불러오지 못했습니다.');
-    }
-
-    const canvas = await html2canvas(target, {
-      scale: Math.min(2, window.devicePixelRatio || 1.5),
-      useCORS: true,
-      backgroundColor: '#ffffff',
-      scrollX: 0,
-      scrollY: -window.scrollY,
-      windowWidth: document.documentElement.scrollWidth,
-      windowHeight: document.documentElement.scrollHeight
-    });
-
-    canvas.toBlob(async (blob) => {
-      if(!blob){
-        alert('결과 이미지를 만들지 못했습니다. 다시 시도해 주세요.');
-        return;
-      }
-
-      const file = new File([blob], 'FLIP_강점발견_결과지.png', { type: 'image/png' });
-
-      if(navigator.share && navigator.canShare && navigator.canShare({ files: [file] })){
-        try{
-          await navigator.share({
-            title: 'FLIP 강점 발견 결과지',
-            text: '나의 FLIP 강점 발견 결과지입니다.',
-            files: [file]
-          });
-        }catch(err){
-          // 사용자가 공유를 취소한 경우는 조용히 처리
-          console.log('공유가 취소되었거나 실패했습니다.', err);
-        }
-      }else{
-        const link = document.createElement('a');
-        link.download = 'FLIP_강점발견_결과지.png';
-        link.href = URL.createObjectURL(blob);
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        setTimeout(() => URL.revokeObjectURL(link.href), 1000);
-        alert('결과지 이미지가 다운로드되었습니다. 카카오톡에 파일로 첨부해서 보내주세요.');
-      }
-    }, 'image/png');
-  }catch(error){
-    console.error(error);
-    alert('공유 이미지를 만드는 중 오류가 발생했습니다. 인쇄하기에서 PDF 저장을 사용해 주세요.');
-  }finally{
-    if(shareBtn){
-      shareBtn.disabled = false;
-      shareBtn.textContent = originalText;
-    }
-  }
-}
-
-document.getElementById('shareKakaoBtn').onclick = shareResultToKakao;
-
+document.getElementById('clearBtn').onclick=()=>{selected.clear();renderWeak();};
+document.getElementById('restartBtn').onclick=()=>{selected.clear();renderWeak();document.getElementById('resultSection').classList.add('hidden');document.getElementById('selectSection').classList.remove('hidden');window.scrollTo(0,0)};
 renderWeak();
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script>
+async function createResultPdfBlob(){
+  const target = document.getElementById('resultArea');
+  const buttons = document.querySelectorAll('.noPrint');
+  buttons.forEach(b => b.style.visibility = 'hidden');
+
+  const canvas = await html2canvas(target, {
+    scale: 2,
+    useCORS: true,
+    backgroundColor: '#ffffff',
+    windowWidth: document.documentElement.scrollWidth
+  });
+
+  buttons.forEach(b => b.style.visibility = '');
+
+  const imgData = canvas.toDataURL('image/png');
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF('p', 'mm', 'a4');
+  const pdfWidth = pdf.internal.pageSize.getWidth();
+  const pdfHeight = pdf.internal.pageSize.getHeight();
+  const imgWidth = pdfWidth;
+  const imgHeight = canvas.height * imgWidth / canvas.width;
+
+  let heightLeft = imgHeight;
+  let position = 0;
+
+  pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+  heightLeft -= pdfHeight;
+
+  while (heightLeft > 0) {
+    position = heightLeft - imgHeight;
+    pdf.addPage();
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    heightLeft -= pdfHeight;
+  }
+
+  return pdf.output('blob');
+}
+
+document.addEventListener('click', async function(e){
+  if(e.target && e.target.id === 'sharePdfBtn'){
+    const btn = e.target;
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'PDF 만드는 중...';
+
+    try{
+      const pdfBlob = await createResultPdfBlob();
+      const file = new File([pdfBlob], 'FLIP_강점결과.pdf', { type: 'application/pdf' });
+
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: 'FLIP 강점 발견 결과',
+          text: '나의 강점 결과 PDF입니다.',
+          files: [file]
+        });
+      } else {
+        const link = document.createElement('a');
+        link.download = 'FLIP_강점결과.pdf';
+        link.href = URL.createObjectURL(pdfBlob);
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(link.href), 3000);
+        alert('PDF 파일이 다운로드되었습니다. 카카오톡에 첨부해서 보내주세요.');
+      }
+    }catch(err){
+      console.error(err);
+      alert('PDF 생성 중 오류가 발생했습니다. 다시 시도해 주세요.');
+    }finally{
+      btn.disabled = false;
+      btn.textContent = originalText;
+    }
+  }
+});
+</script>
+
 </body>
 </html>
