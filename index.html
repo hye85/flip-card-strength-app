@@ -202,7 +202,7 @@
   <section id="resultSection" class="hidden">
     <div class="toolbar noPrint">
       <button onclick="window.print()">결과 인쇄하기</button>
-      <button id="sharePdfBtn">PDF로 카카오톡 공유하기</button>
+      <button id="shareImage3Btn">결과 이미지 3장 카카오톡 공유하기</button>
       <button class="secondary" id="restartBtn">처음부터 다시</button>
     </div>
     <div id="resultArea"></div>
@@ -362,9 +362,8 @@ renderWeak();
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script>
-async function createResultPdfBlob(){
+async function createThreeResultImageFiles(){
   const target = document.getElementById('resultArea');
   const buttons = document.querySelectorAll('.noPrint');
   buttons.forEach(b => b.style.visibility = 'hidden');
@@ -378,58 +377,69 @@ async function createResultPdfBlob(){
 
   buttons.forEach(b => b.style.visibility = '');
 
-  const imgData = canvas.toDataURL('image/png');
-  const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF('p', 'mm', 'a4');
-  const pdfWidth = pdf.internal.pageSize.getWidth();
-  const pdfHeight = pdf.internal.pageSize.getHeight();
-  const imgWidth = pdfWidth;
-  const imgHeight = canvas.height * imgWidth / canvas.width;
+  const files = [];
+  const partCount = 3;
+  const partHeight = Math.ceil(canvas.height / partCount);
 
-  let heightLeft = imgHeight;
-  let position = 0;
+  for (let i = 0; i < partCount; i++) {
+    const sourceY = i * partHeight;
+    const currentHeight = Math.min(partHeight, canvas.height - sourceY);
 
-  pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-  heightLeft -= pdfHeight;
+    const partCanvas = document.createElement('canvas');
+    partCanvas.width = canvas.width;
+    partCanvas.height = currentHeight;
 
-  while (heightLeft > 0) {
-    position = heightLeft - imgHeight;
-    pdf.addPage();
-    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-    heightLeft -= pdfHeight;
+    const ctx = partCanvas.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, partCanvas.width, partCanvas.height);
+    ctx.drawImage(
+      canvas,
+      0, sourceY, canvas.width, currentHeight,
+      0, 0, canvas.width, currentHeight
+    );
+
+    const blob = await new Promise(resolve => partCanvas.toBlob(resolve, 'image/png', 1));
+    files.push(new File([blob], `FLIP_강점결과_${i + 1}of3.png`, { type: 'image/png' }));
   }
 
-  return pdf.output('blob');
+  return files;
+}
+
+function downloadFiles(files){
+  files.forEach((file, index) => {
+    const link = document.createElement('a');
+    link.download = file.name;
+    link.href = URL.createObjectURL(file);
+    setTimeout(() => {
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(link.href), 3000);
+    }, index * 400);
+  });
 }
 
 document.addEventListener('click', async function(e){
-  if(e.target && e.target.id === 'sharePdfBtn'){
+  if(e.target && e.target.id === 'shareImage3Btn'){
     const btn = e.target;
     const originalText = btn.textContent;
     btn.disabled = true;
-    btn.textContent = 'PDF 만드는 중...';
+    btn.textContent = '이미지 3장 만드는 중...';
 
     try{
-      const pdfBlob = await createResultPdfBlob();
-      const file = new File([pdfBlob], 'FLIP_강점결과.pdf', { type: 'application/pdf' });
+      const files = await createThreeResultImageFiles();
 
-      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      if (navigator.share && navigator.canShare && navigator.canShare({ files })) {
         await navigator.share({
           title: 'FLIP 강점 발견 결과',
-          text: '나의 강점 결과 PDF입니다.',
-          files: [file]
+          text: '나의 강점 결과 이미지 3장입니다.',
+          files
         });
       } else {
-        const link = document.createElement('a');
-        link.download = 'FLIP_강점결과.pdf';
-        link.href = URL.createObjectURL(pdfBlob);
-        link.click();
-        setTimeout(() => URL.revokeObjectURL(link.href), 3000);
-        alert('PDF 파일이 다운로드되었습니다. 카카오톡에 첨부해서 보내주세요.');
+        downloadFiles(files);
+        alert('결과 이미지 3장이 다운로드됩니다. 카카오톡에 3장을 함께 첨부해서 보내주세요.');
       }
     }catch(err){
       console.error(err);
-      alert('PDF 생성 중 오류가 발생했습니다. 다시 시도해 주세요.');
+      alert('이미지 생성 중 오류가 발생했습니다. 다시 시도해 주세요.');
     }finally{
       btn.disabled = false;
       btn.textContent = originalText;
